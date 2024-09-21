@@ -8,6 +8,7 @@ import { Select } from '../select';
 import { Button } from 'components/button';
 import { Text } from '../text';
 import { RadioGroup } from '../radio-group';
+import clsx from 'clsx';
 
 interface ArticleParamsFormProps {
 	onApplyParams: (paramsText: typeof defaultArticleState) => void;
@@ -30,11 +31,11 @@ export const ArticleParamsForm: React.FC<ArticleParamsFormProps> = ({
 }) => {
 	const [params, setParams] =
 		useState<typeof defaultArticleState>(defaultArticleState);
-	const [isVisible, setIsVisible] = useState<boolean>(false);
+	const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
 	const formRef = useRef<HTMLFormElement | null>(null);
 
-	const toggleVisible = () => {
-		setIsVisible((prev) => !prev);
+	const toggleMenu = () => {
+		setIsMenuOpen((prev) => !prev);
 	};
 
 	const onChangeHandler =
@@ -48,42 +49,38 @@ export const ArticleParamsForm: React.FC<ArticleParamsFormProps> = ({
 	const onSubmitHandler = (e: React.FormEvent) => {
 		e.preventDefault();
 		onApplyParams(params);
-		setIsVisible(false);
+		setIsMenuOpen(false);
 	};
 
 	const onResetHandler = () => {
 		setParams(defaultArticleState);
 		onResetParams();
-		setIsVisible(false);
-	};
-
-	const closeHandler = (e: MouseEvent) => {
-		if (formRef.current && !formRef.current.contains(e.target as Node)) {
-			setIsVisible(false);
-		}
+		setIsMenuOpen(false);
 	};
 
 	useEffect(() => {
-		if (isVisible) {
+		const closeHandler = (e: MouseEvent) => {
+			if (formRef.current && !formRef.current.contains(e.target as Node)) {
+				setIsMenuOpen(false);
+			}
+		};
+
+		if (isMenuOpen) {
 			document.addEventListener('mousedown', closeHandler);
-		} else {
-			document.removeEventListener('mousedown', closeHandler);
 		}
 
 		return () => {
 			document.removeEventListener('mousedown', closeHandler);
 		};
-	}, [isVisible]);
+	}, [isMenuOpen]);
 
 	return (
 		<>
-			<ArrowButton isVisible={isVisible} onClick={toggleVisible} />
+			<ArrowButton isVisible={isMenuOpen} onClick={toggleMenu} />
 			<aside
-				className={`${styles.container} ${
-					isVisible ? styles.container_open : ''
-				}`}>
+				className={clsx(styles.container, isMenuOpen && styles.container_open)}>
 				<form className={styles.form} onSubmit={onSubmitHandler} ref={formRef}>
-					<Text size={31} weight={800} uppercase={true}>
+					<Text size={31} weight={800} uppercase={true} as="h2">
 						Задайте параметры
 					</Text>
 					<Select
